@@ -3,7 +3,7 @@
 [![Thunderstore](https://img.shields.io/badge/Thunderstore-v1.1.2-brightgreen?style=flat-square&logo=thunderstore)](https://thunderstore.io/c/repo/p/HiarlyScripter/HuntsmanLoot/)
 [![R.E.P.O.](https://img.shields.io/badge/R.E.P.O.-Build%2023250495-blue?style=flat-square)](https://store.steampowered.com/app/3241660/REPO/)
 [![BepInEx](https://img.shields.io/badge/BepInEx-5.4.23.5-yellow?style=flat-square)](https://thunderstore.io/c/repo/p/BepInEx/BepInExPack/)
-[![Licença](https://img.shields.io/badge/licença-MIT-lightgrey?style=flat-square)](LICENSE)
+[![Licença](https://img.shields.io/badge/licença-crédito%20obrigatório-red?style=flat-square)](LICENSE)
 
 > O Huntsman agora **paga um preço** quando você o elimina — ele larga sua espingarda no chão!
 
@@ -58,21 +58,6 @@ Faz o Huntsman dropar sua espingarda (`item_gun_shotgun`) ao ser eliminado. Usa 
 **Via manual:**
 1. Instale o BepInExPack
 2. Copie `plugins/HiarlyScripter-HuntsmanLoot/` para `BepInEx/plugins/`
-
----
-
-## 🛠️ Build a partir do fonte
-
-Requisitos: **.NET SDK**, **BepInEx 5.4.23.5** via r2modman, **R.E.P.O.** instalado via Steam.
-
-```powershell
-git clone https://github.com/hiarly-scripter/HiarlyScripter-HuntsmanLoot.git
-cd HiarlyScripter-HuntsmanLoot
-dotnet build src/HuntsmanLoot.csproj --configuration Release
-# DLL gerada em build/HuntsmanLoot.dll
-```
-
-> ⚠️ O `.csproj` referencia DLLs locais do R.E.P.O. e do BepInEx. Ajusta os `HintPath` no arquivo de projeto para os caminhos da tua instalação antes de compilar. Build em CI não é suportado pois o jogo é pago e não está disponível publicamente.
 
 ---
 
