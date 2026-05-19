@@ -1,0 +1,95 @@
+name: 🐛 Bug Report
+description: Algo não está funcionando como esperado? Me conta.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por abrir um report! Quanto mais detalhes você der, mais rápido consigo resolver. 🙏
+
+  - type: input
+    id: mod_version
+    attributes:
+      label: Versão do Huntsman Loot
+      placeholder: "ex: 1.1.2"
+    validations:
+      required: true
+
+  - type: input
+    id: game_version
+    attributes:
+      label: Versão do R.E.P.O.
+      description: Aparece no canto da tela principal do jogo.
+      placeholder: "ex: Build 23250495"
+    validations:
+      required: true
+
+  - type: input
+    id: bepinex_version
+    attributes:
+      label: Versão do BepInEx
+      placeholder: "ex: 5.4.23.5"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: multiplayer
+    attributes:
+      label: Como estava jogando quando o bug aconteceu?
+      options:
+        - Singleplayer
+        - Multiplayer (era o host)
+        - Multiplayer (era cliente)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: O que aconteceu?
+      description: Descreva o bug da forma mais clara possível.
+      placeholder: "Ex: O Huntsman morreu mas a espingarda não caiu no chão."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: O que deveria ter acontecido?
+      placeholder: "Ex: A espingarda deveria aparecer no local onde o Huntsman morreu."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Como reproduzir o bug?
+      description: Passo a passo para chegar no mesmo problema.
+      placeholder: |
+        1. Entrei numa partida com...
+        2. Encontrei o Huntsman em...
+        3. Matei o Huntsman e...
+        4. A espingarda não apareceu
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Log do BepInEx
+      description: Cole aqui o conteúdo de `BepInEx/LogOutput.log`. Erros e warnings são os mais importantes.
+      render: text
+      placeholder: "Cole o log aqui..."
+
+  - type: textarea
+    id: other_mods
+    attributes:
+      label: Outros mods instalados
+      description: Lista os outros mods ativos. Às vezes conflitos acontecem.
+      placeholder: "Ex: BerserkerEnemies, REPOConfig, MoreInventorySlots..."
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Informações extras
+      description: Prints, GIFs, qualquer coisa que ajude a entender o problema.

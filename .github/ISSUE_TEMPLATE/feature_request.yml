@@ -1,0 +1,38 @@
+name: 💡 Sugestão de Feature
+description: Tem uma ideia para melhorar o mod? Adoraria ouvir.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sugestões são sempre bem-vindas! Não prometo implementar tudo, mas leio cada uma. 👀
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Qual é a sua ideia?
+      description: Descreve o que gostarias de ver no mod.
+      placeholder: "Ex: Seria legal se houvesse uma chance de o Huntsman dropar munição junto com a espingarda."
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Por que isso melhoraria o mod?
+      description: Contexto ajuda muito a avaliar se faz sentido.
+      placeholder: "Ex: Sem munição a espingarda fica inútil logo no início da rodada..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Já pensou em alguma alternativa?
+      description: Outras formas de resolver o mesmo problema, ou outros mods que fazem algo parecido.
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Mais alguma coisa?
+      description: Prints, referências, qualquer coisa que ajude a visualizar a ideia.
