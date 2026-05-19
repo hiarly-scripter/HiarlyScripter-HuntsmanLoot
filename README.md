@@ -63,7 +63,7 @@ Faz o Huntsman dropar sua espingarda (`item_gun_shotgun`) ao ser eliminado. Usa 
 
 ## 🛠️ Build a partir do fonte
 
-Requisitos: **.NET SDK**, **BepInEx 5.4.23.5**, **R.E.P.O.** instalado em `E:\SteamLibrary\steamapps\common\REPO\`
+Requisitos: **.NET SDK**, **BepInEx 5.4.23.5** via r2modman, **R.E.P.O.** instalado via Steam.
 
 ```powershell
 git clone https://github.com/hiarly-scripter/HiarlyScripter-HuntsmanLoot.git
@@ -72,7 +72,7 @@ dotnet build src/HuntsmanLoot.csproj --configuration Release
 # DLL gerada em build/HuntsmanLoot.dll
 ```
 
-> Os caminhos das referências no `.csproj` apontam para o diretório padrão de instalação do R.E.P.O. e do BepInEx via r2modman. Ajuste conforme necessário para o seu ambiente.
+> ⚠️ O `.csproj` referencia DLLs locais do R.E.P.O. e do BepInEx. Ajusta os `HintPath` no arquivo de projeto para os caminhos da tua instalação antes de compilar. Build em CI não é suportado pois o jogo é pago e não está disponível publicamente.
 
 ---
 
