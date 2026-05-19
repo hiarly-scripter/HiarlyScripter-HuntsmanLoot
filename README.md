@@ -78,7 +78,7 @@ dotnet build src/HuntsmanLoot.csproj --configuration Release
 
 ## 📄 Licença
 
-[MIT](LICENSE) — livre para usar, estudar e modificar. Crédito apreciado mas não obrigatório.
+[Licença customizada](LICENSE) — uso e estudo permitidos. **Crédito ao autor obrigatório** em qualquer redistribuição ou trabalho derivado.
 
 ---
 
