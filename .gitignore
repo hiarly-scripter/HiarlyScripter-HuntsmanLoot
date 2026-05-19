@@ -1,0 +1,16 @@
+# Build output
+build/
+dist/
+src/obj/
+src/bin/
+
+# Packages
+*.zip
+
+# IDE
+.vs/
+*.user
+*.suo
+
+# Obfuscation (no longer used — Thunderstore prohibits obfuscated code)
+obfuscar.xml

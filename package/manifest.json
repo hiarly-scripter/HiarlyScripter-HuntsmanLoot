@@ -1,0 +1,9 @@
+{
+  "name": "HuntsmanLoot",
+  "version_number": "1.1.2",
+  "website_url": "https://discord.com/users/hiarly_ferreira",
+  "description": "Faz o Huntsman largar sua espingarda ao morrer. Chance de drop configurável, suporte a multiplayer e modo berserk. Sem dependências externas além do BepInEx.",
+  "dependencies": [
+    "BepInEx-BepInExPack-5.4.2305"
+  ]
+}
