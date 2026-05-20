@@ -2,7 +2,7 @@
 
 ---
 
-## v1.1.2 — 2026-05-20
+## v1.1.3 — 2026-05-20
 **Compatibilidade:** R.E.P.O. Build `23250495` · BepInEx `5.4.23.5`
 
 ### Adicionado
