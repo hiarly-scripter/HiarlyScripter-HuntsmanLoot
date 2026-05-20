@@ -1,6 +1,6 @@
 # 🔫 Huntsman Loot
 
-[![Thunderstore](https://img.shields.io/badge/Thunderstore-v1.1.2-brightgreen?style=flat-square&logo=thunderstore)](https://thunderstore.io/c/repo/p/HiarlyScripter/HuntsmanLoot/)
+[![Thunderstore](https://img.shields.io/badge/Thunderstore-v1.1.3-brightgreen?style=flat-square&logo=thunderstore)](https://thunderstore.io/c/repo/p/HiarlyScripter/HuntsmanLoot/)
 [![R.E.P.O.](https://img.shields.io/badge/R.E.P.O.-Build%2023250495-blue?style=flat-square)](https://store.steampowered.com/app/3241660/REPO/)
 [![BepInEx](https://img.shields.io/badge/BepInEx-5.4.23.5-yellow?style=flat-square)](https://thunderstore.io/c/repo/p/BepInEx/BepInExPack/)
 [![Licença](https://img.shields.io/badge/licença-crédito%20obrigatório-red?style=flat-square)](LICENSE)
@@ -19,9 +19,11 @@ Faz o Huntsman dropar sua espingarda (`item_gun_shotgun`) ao ser eliminado. Usa 
 
 - 🔫 **Drop ao morrer** — a espingarda cai exatamente onde o Huntsman morreu
 - 🎲 **Chance configurável** — de 1% a 100% (padrão: sempre dropa)
+- 🎰 **Munição aleatória** — a espingarda dropa com balas aleatórias entre 1 e o máximo; desative para sempre cair cheia
 - 💀 **Modo Berserk** — drop exclusivo de Huntsmans em modo berserk *(requer BerserkerEnemies, opcional)*
 - 👑 **Processado pelo host** — só o host processa o drop; a arma aparece para **todos na sala**
 - 🔧 **Zero dependências extras** — usa o item nativo do jogo, nada mais
+- 🟢 **Sem barra verde falsa** — barra de bateria removida da espingarda; a barra amarela de munição funciona normalmente
 - ⚙️ **REPOConfig** — todos os configs editáveis dentro do jogo *(opcional)*
 
 ---
@@ -45,6 +47,7 @@ Faz o Huntsman dropar sua espingarda (`item_gun_shotgun`) ao ser eliminado. Usa 
 | `Drop` | `DropChance` | `100` | Chance (%) de drop — 1 a 100 |
 | `Drop` | `BerserkerOnly` | `false` | Só dropa de Huntsmans em modo berserk |
 | `Drop` | `MasterClientOnly` | `true` | Recomendado — evita drops duplicados em multiplayer |
+| `Drop` | `RandomizeAmmo` | `true` | Munição aleatória ao dropar; `false` = sempre cheia |
 
 ---
 
