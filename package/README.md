@@ -23,6 +23,7 @@ O **Huntsman Loot** faz o Huntsman dropar sua espingarda ao ser eliminado. A arm
 - 💀 **Modo Berserk** — drop exclusivo de Huntsmans em modo berserk *(requer BerserkerEnemies, opcional)*
 - 👑 **Processado pelo host** — só o host processa o drop; a arma aparece para **todos na sala**
 - 🔧 **Zero dependências extras** — usa o item nativo do jogo, nada mais
+- 🎰 **Munição aleatória** — a espingarda dropa com quantidade de balas aleatória entre 1 e o máximo; desative nas configs para sempre cair cheia
 - 🟢 **Sem barra verde falsa** — a barra de bateria desnecessária foi removida da arma; a barra de munição (amarela) funciona normalmente, inclusive ao recarregar com cristal
 - ⚙️ **REPOConfig** — todos os configs editáveis dentro do jogo *(opcional)*
 
@@ -49,6 +50,7 @@ Edite em `BepInEx/config/com.hiarlyscripter.huntsmanloot.cfg` ou use o **REPOCon
 | `Drop` | `DropChance` | `100` | Chance (%) de a espingarda cair — aceita valores de 1 a 100 |
 | `Drop` | `BerserkerOnly` | `false` | `true` = espingarda só dropa de Huntsmans no modo berserk |
 | `Drop` | `MasterClientOnly` | `true` | ⚠️ Recomendado manter `true` — evita múltiplos drops simultâneos em multiplayer |
+| `Drop` | `RandomizeAmmo` | `true` | `true` = espingarda cai com balas aleatórias (1 até o máximo); `false` = sempre cai cheia |
 
 ---
 

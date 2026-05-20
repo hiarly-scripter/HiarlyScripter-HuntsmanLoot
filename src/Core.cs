@@ -12,69 +12,75 @@ using UnityEngine;
 
 namespace HuntsmanLoot
 {
-    [BepInPlugin("com.hiarlyscripter.huntsmanloot", "Huntsman Loot", "1.1.1")]
+    [BepInPlugin("com.hiarlyscripter.huntsmanloot", "Huntsman Loot", "1.1.3")]
     public sealed class HuntsmanLootPlugin : BaseUnityPlugin
     {
         internal static HuntsmanLootPlugin Instance { get; private set; }
         internal static ManualLogSource Log         { get; private set; }
 
-        // ── Seção: Drop ───────────────────────────────────────────────────────
+        // ── Secao: Drop ───────────────────────────────────────────────────────
         internal static ConfigEntry<int>  DropChance;
         internal static ConfigEntry<bool> BerserkerOnly;
         internal static ConfigEntry<bool> MasterClientOnly;
+        internal static ConfigEntry<bool> RandomizeAmmo;
 
-        // Item nativo do jogo (espingarda do Huntsman — item_gun_shotgun)
-        // Sem dependência de mods externos. Capturado do registro de itens do próprio jogo.
+        // Item nativo do jogo (espingarda do Huntsman - ScriptableObject capturado do registro)
         internal static Item NativeShotgunItem;
 
-        // Reflexão para campos internos do jogo (cache estático — resolve uma vez)
+        // Reflexao - campos internos do jogo (cache estatico, resolve uma vez na inicializacao)
         internal static readonly FieldInfo _hasHealthField       = AccessTools.Field(typeof(Enemy),        "HasHealth");
         internal static readonly FieldInfo _healthField          = AccessTools.Field(typeof(Enemy),        "Health");
         internal static readonly FieldInfo _hpCurrentField       = AccessTools.Field(typeof(EnemyHealth),  "healthCurrent");
         internal static readonly FieldInfo _enemyField           = AccessTools.Field(typeof(EnemyParent),  "Enemy");
         internal static readonly FieldInfo _itemDictField        = AccessTools.Field(typeof(StatsManager), "itemDictionary");
 
-        // Reflexão para campos privados de PrefabRef (usado por Item.prefab)
+        // Reflexao - PrefabRef (Item.prefab)
         internal static readonly FieldInfo _prefabNameField      = AccessTools.Field(typeof(PrefabRef), "prefabName");
         internal static readonly FieldInfo _resourcePathField    = AccessTools.Field(typeof(PrefabRef), "resourcePath");
 
-        // Suprime a barra verde (bateria) na espingarda — ela não usa bateria de forma significativa
-        internal static readonly FieldInfo _suppressBatteryField = AccessTools.Field(typeof(ItemEquippable), "suppressBatteryUI");
+        // Reflexao - Item ScriptableObject
+        internal static readonly FieldInfo _itemNameField        = AccessTools.Field(typeof(Item), "itemName");
+
+        // Reflexao - ItemGun (municao)
+        internal static readonly FieldInfo _numberOfBulletsField = AccessTools.Field(typeof(ItemGun), "numberOfBullets");
+
+        // Reflexao - supressao da barra de bateria
+        internal static readonly FieldInfo _suppressBatteryField = AccessTools.Field(typeof(ItemBattery), "suppressBatteryUI");
 
         private void Awake()
         {
             Instance = this;
             Log      = Logger;
 
-            // ── Drop ──
             DropChance = Config.Bind(
                 "Drop", "DropChance", 100,
                 new ConfigDescription(
                     "Chance (%) de a espingarda cair quando o Huntsman morre. " +
-                    "100 = sempre cai, 1 = raríssimo. Editável pelo REPOConfig.",
+                    "100 = sempre cai, 1 = rarissimo.",
                     new AcceptableValueRange<int>(1, 100)));
 
             BerserkerOnly = Config.Bind(
                 "Drop", "BerserkerOnly", false,
-                "true  = a espingarda só cai de um Huntsman no modo berserk " +
-                "(requer mod BerserkerEnemies — sem ele, dropa normalmente).\n" +
-                "false = a espingarda cai de qualquer Huntsman (padrão).");
+                "true  = a espingarda so cai de um Huntsman no modo berserk " +
+                "(requer mod BerserkerEnemies - sem ele, dropa normalmente).\n" +
+                "false = a espingarda cai de qualquer Huntsman (padrao).");
 
             MasterClientOnly = Config.Bind(
                 "Drop", "MasterClientOnly", true,
-                "true  = apenas o HOST/dono da sala processa o drop e gera a espingarda. " +
-                "Recomendado: evita múltiplas espingardas aparecendo ao mesmo tempo em multiplayer.\n" +
-                "false = qualquer cliente pode gerar o drop (pode causar duplicatas).");
+                "true  = apenas o HOST/dono da sala processa o drop (evita duplicatas em multiplayer).\n" +
+                "false = qualquer cliente pode gerar o drop.");
+
+            RandomizeAmmo = Config.Bind(
+                "Drop", "RandomizeAmmo", true,
+                "true  = a espingarda cai com quantidade aleatoria de balas (entre 1 e o maximo).\n" +
+                "false = a espingarda cai sempre com municao completa.");
 
             new Harmony("com.hiarlyscripter.huntsmanloot").PatchAll(typeof(HuntsmanPatches));
-            Log.LogInfo("Huntsman Loot v1.1.1 carregado.");
+            Log.LogInfo("Huntsman Loot v1.1.3 carregado.");
 
-            // Inicia busca pelo item nativo de espingarda do jogo
             StartCoroutine(WaitForNativeShotgun());
         }
 
-        // Busca o item nativo item_gun_shotgun no registro do StatsManager.
-        // Tenta via itemDictionary direto; o patch GetAllItemsFromStatsManager serve de fallback.
         private IEnumerator WaitForNativeShotgun()
         {
             while (NativeShotgunItem == null)
@@ -85,28 +91,49 @@ namespace HuntsmanLoot
                     if (sm != null && _itemDictField != null)
                     {
                         var dict = _itemDictField.GetValue(sm) as System.Collections.IDictionary;
-                        if (dict != null)
+                        if (dict != null && dict.Count > 0)
                         {
                             foreach (System.Collections.DictionaryEntry kv in dict)
                             {
-                                if (kv.Value is Item it && it.name == "item_gun_shotgun")
+                                var key = kv.Key?.ToString() ?? "";
+                                if (kv.Value is Item it &&
+                                    (key == "Item Gun Shotgun" || it.name == "Item Gun Shotgun"))
                                 {
                                     NativeShotgunItem = it;
-                                    var pn = (string)_prefabNameField?.GetValue(it.prefab);
-                                    var rp = (string)_resourcePathField?.GetValue(it.prefab);
-                                    Log.LogInfo(
-                                        $"[HuntsmanLoot] Espingarda nativa encontrada: " +
-                                        $"name={it.name} prefabName={pn} resourcePath={rp}");
+                                    RegisterItemNameAlias(it, dict);
+                                    Log.LogInfo("[HuntsmanLoot] Espingarda nativa encontrada no registro do jogo.");
                                     yield break;
                                 }
                             }
                         }
                     }
                 }
-                catch { /* StatsManager ainda não inicializado */ }
+                catch (Exception ex) { Log.LogWarning($"[HuntsmanLoot] WaitForNativeShotgun: {ex.Message}"); }
 
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(2f);
             }
+        }
+
+        // Registra item.itemName (ex: "Gun Hunter") como alias no dicionario.
+        // O itemName e o identificador interno usado pela inicializacao do item no jogo.
+        internal static void RegisterItemNameAlias(Item item, System.Collections.IDictionary dict)
+        {
+            var itemName = (string)_itemNameField?.GetValue(item);
+            if (!string.IsNullOrEmpty(itemName) && !dict.Contains(itemName))
+                dict[itemName] = item;
+        }
+
+        // Aguarda um frame (Start() do ItemGun ja rodou, numberOfBullets esta no valor maximo)
+        // e aplica um valor aleatorio entre 1 e esse maximo.
+        internal static IEnumerator ApplyRandomAmmo(GameObject spawned)
+        {
+            yield return null;
+            if (_numberOfBulletsField == null) yield break;
+            var gun = spawned.GetComponentInChildren<ItemGun>();
+            if (gun == null) yield break;
+            int maxAmmo = (int)_numberOfBulletsField.GetValue(gun);
+            if (maxAmmo > 1)
+                _numberOfBulletsField.SetValue(gun, UnityEngine.Random.Range(1, maxAmmo + 1));
         }
     }
 
@@ -123,7 +150,6 @@ namespace HuntsmanLoot
         {
             if (__instance.enemyName != "Huntsman") return;
 
-            // Garante que só o host processa o drop em multiplayer (evita duplicatas)
             if (HuntsmanLootPlugin.MasterClientOnly.Value && !SemiFunc.IsMasterClientOrSingleplayer()) return;
 
             Enemy enemy = (Enemy)HuntsmanLootPlugin._enemyField.GetValue(__instance);
@@ -136,7 +162,7 @@ namespace HuntsmanLoot
             if (health == null) return;
 
             int hp = (int)HuntsmanLootPlugin._hpCurrentField.GetValue(health);
-            if (hp > 0) return; // despawn normal, não morte
+            if (hp > 0) return;
 
             if (UnityEngine.Random.Range(1, 101) > HuntsmanLootPlugin.DropChance.Value) return;
 
@@ -154,7 +180,7 @@ namespace HuntsmanLoot
             if (berserkAsm == null)
             {
                 HuntsmanLootPlugin.Log.LogWarning(
-                    "[HuntsmanLoot] BerserkerEnemies não detectado — dropando mesmo assim.");
+                    "[HuntsmanLoot] BerserkerEnemies nao detectado — dropando mesmo assim.");
                 DropRifle(enemy);
                 return;
             }
@@ -180,73 +206,89 @@ namespace HuntsmanLoot
             if (shotgun == null)
             {
                 HuntsmanLootPlugin.Log.LogWarning(
-                    "[HuntsmanLoot] item_gun_shotgun não encontrado no registro do jogo — drop ignorado.");
+                    "[HuntsmanLoot] Espingarda nao encontrada no registro do jogo — drop ignorado.");
                 return;
             }
 
             var resourcePath = (string)HuntsmanLootPlugin._resourcePathField?.GetValue(shotgun.prefab);
-            var prefabName   = (string)HuntsmanLootPlugin._prefabNameField?.GetValue(shotgun.prefab);
+            if (string.IsNullOrEmpty(resourcePath))
+            {
+                HuntsmanLootPlugin.Log.LogWarning("[HuntsmanLoot] resourcePath vazio — drop ignorado.");
+                return;
+            }
 
+            GameObject spawned;
             if (!SemiFunc.IsMultiplayer())
             {
-                // Singleplayer: carrega via resourcePath e instancia localmente
-                if (string.IsNullOrEmpty(resourcePath))
+                var prefab = Resources.Load<GameObject>(resourcePath);
+                if (prefab == null)
                 {
-                    HuntsmanLootPlugin.Log.LogWarning("[HuntsmanLoot] resourcePath vazio — drop ignorado.");
-                    return;
-                }
-                var go = Resources.Load<GameObject>(resourcePath);
-                if (go != null)
-                    UnityEngine.Object.Instantiate(go, origin.position, Quaternion.identity);
-                else
                     HuntsmanLootPlugin.Log.LogWarning(
                         $"[HuntsmanLoot] Resources.Load falhou para '{resourcePath}' — drop ignorado.");
+                    return;
+                }
+                spawned = UnityEngine.Object.Instantiate(prefab, origin.position, Quaternion.identity);
             }
             else
             {
-                // Multiplayer: Photon usa prefabName como chave de instância
-                if (string.IsNullOrEmpty(prefabName))
-                {
-                    HuntsmanLootPlugin.Log.LogWarning("[HuntsmanLoot] prefabName vazio — drop ignorado.");
-                    return;
-                }
-                PhotonNetwork.InstantiateRoomObject(
-                    prefabName, origin.position, Quaternion.identity, 0, null);
+                spawned = PhotonNetwork.InstantiateRoomObject(
+                    resourcePath, origin.position, Quaternion.identity, 0, null);
             }
+
+            if (HuntsmanLootPlugin.RandomizeAmmo.Value)
+                HuntsmanLootPlugin.Instance.StartCoroutine(HuntsmanLootPlugin.ApplyRandomAmmo(spawned));
         }
 
-        // ── 2. Remove barra verde (bateria) da espingarda ────────────────────
-        // A espingarda não usa bateria de forma alguma; a barra verde fica em 1.0
-        // para sempre e sobrepõe visualmente a barra amarela de munição.
-        // Roda em todos os clientes via Start(), corrigindo o bug em multiplayer também.
+        // ── 2. Suprime barra de bateria na espingarda ─────────────────────────
+        // ItemBattery.suppressBatteryUI = true faz o UI nao renderizar a barra verde,
+        // deixando a barra amarela de municao visivel sem sobreposicao.
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(ItemEquippable), "Start")]
-        static void SuppressShotgunBatteryUI(ItemEquippable __instance)
+        [HarmonyPatch(typeof(ItemBattery), "Start")]
+        static void SuppressShotgunBatteryUI(ItemBattery __instance)
         {
             if (HuntsmanLootPlugin._suppressBatteryField == null) return;
-            var item = __instance.GetComponentInParent<Item>();
-            if (item != null && item.name == "item_gun_shotgun")
+            // Item e ScriptableObject, nao Component — usa o nome do GameObject diretamente
+            if (__instance.gameObject.name.StartsWith("Item Gun Shotgun"))
                 HuntsmanLootPlugin._suppressBatteryField.SetValue(__instance, true);
         }
 
         // ── 3. Fallback: captura item nativo via hook da loja ─────────────────
-        // Garante que o item é capturado mesmo se StatsManager não estava pronto
-        // no Awake. Também cobre o caso de morte do Huntsman antes da primeira loja.
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ShopManager), "GetAllItemsFromStatsManager")]
         static void CaptureNativeShotgun(ref List<Item> ___potentialItems)
         {
-            if (HuntsmanLootPlugin.NativeShotgunItem == null)
+            if (HuntsmanLootPlugin.NativeShotgunItem != null) return;
+
+            var found = ___potentialItems.FirstOrDefault(it => it.name == "Item Gun Shotgun");
+            if (found == null) return;
+
+            HuntsmanLootPlugin.NativeShotgunItem = found;
+
+            var sm = StatsManager.instance;
+            if (sm != null && HuntsmanLootPlugin._itemDictField != null)
             {
-                var found = ___potentialItems.FirstOrDefault(it => it.name == "item_gun_shotgun");
-                if (found != null)
-                {
-                    HuntsmanLootPlugin.NativeShotgunItem = found;
-                    var pn = (string)HuntsmanLootPlugin._prefabNameField?.GetValue(found.prefab);
-                    HuntsmanLootPlugin.Log.LogInfo(
-                        $"[HuntsmanLoot] Espingarda capturada via loja: name={found.name} prefabName={pn}");
-                }
+                var dict = HuntsmanLootPlugin._itemDictField.GetValue(sm) as System.Collections.IDictionary;
+                if (dict != null)
+                    HuntsmanLootPlugin.RegisterItemNameAlias(found, dict);
             }
+
+            HuntsmanLootPlugin.Log.LogInfo("[HuntsmanLoot] Espingarda capturada via hook da loja.");
+        }
+
+        // ── 4. Silencia warning "Gun Hunter not found in itemDictionary" ──────
+        // O jogo tenta buscar a arma do Huntsman ("Gun Hunter") no dicionario de itens
+        // de loja ao inicializar o inimigo. Como "Gun Hunter" nao e um item compravel,
+        // a busca falha e o jogo loga esse warning a cada Huntsman spawnado.
+        // E um bug do proprio jogo — suprimimos para nao poluir o log.
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(UnityEngine.Debug), "LogWarning", new[] { typeof(object) })]
+        static bool SuppressGunHunterWarning(object message)
+        {
+            if (message is string s &&
+                s.Contains("Gun Hunter") &&
+                s.Contains("not found in the itemDictionary"))
+                return false;
+            return true;
         }
     }
 }
